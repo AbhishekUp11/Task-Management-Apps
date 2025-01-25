@@ -12,15 +12,14 @@ import {
   Paper,
 } from "@mui/material";
 
-const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    answer: "",
-  });
 
+const Login = () => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+      email: "",
+      password: "",
+      
+    });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -32,42 +31,35 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const route = `${process.env.REACT_APP_API}/api/v1/auth/register`
+
     try{
-      const res = await axios.post(route, formData);
-      console.log("response", res)
-      if(res.data.success) {
+      const res = await axios.post(`${process.env.REACT_APP_API}/api/v1/auth/login`, formData);
+      console.log("res.data", res.data)
+      if(res.data.success){
+        console.log("res.data", res.data)
         toast.success(res.data.message)
-        navigate('/login')
+        navigate("/tasks");
       }else{
         toast.error(res.data.message)
       }
     }catch(err){
-      console.log(err);
       toast.error('Something went wrong')
     }
   };
 
+  const handleForgotPassword = async (e) => {
+     
+  };
+
   return (
     <>
-    <Header/>
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
+      <Header/>
+      <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" component="h1" align="center" gutterBottom>
-          Register
+          Sign In
         </Typography>
         <form onSubmit={handleSubmit}>
-          <Box sx={{ mb: 3 }}>
-            <TextField
-              fullWidth
-              label="Name"
-              name="name"
-              variant="outlined"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-          </Box>
           <Box sx={{ mb: 3 }}>
             <TextField
               fullWidth
@@ -92,17 +84,6 @@ const Register = () => {
               required
             />
           </Box>
-          <Box sx={{ mb: 3 }}>
-            <TextField
-              fullWidth
-              label="What is your age?"
-              name="answer"
-              variant="outlined"
-              value={formData.answer}
-              onChange={handleChange}
-              required
-            />
-          </Box>
           <Button
             fullWidth
             variant="contained"
@@ -110,13 +91,22 @@ const Register = () => {
             type="submit"
             sx={{ mt: 2 }}
           >
-            Register
+            Login
+          </Button>
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={handleForgotPassword}
+            sx={{ mt: 2 }}
+          >
+            Forgot Password
           </Button>
         </form>
       </Paper>
     </Container>
-    </>
+      </>
   );
 };
 
-export default Register;
+export default Login;
