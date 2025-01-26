@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   password: { type: String, minLength: 8, required: true },
   answer: { type: String, required: true },
+  token: String,
 });
 
 exports.User = mongoose.model("User", userSchema);

@@ -2,7 +2,7 @@ const task = require("../models/tasks");
 const Task = task.Task;
 
 exports.saveTask = async (req, res) => {
-  const { id, name, description } = req.body;
+  const { id, name, description, user_id } = req.body;
 
   if (!id || !name || !description) {
     return res
@@ -11,8 +11,13 @@ exports.saveTask = async (req, res) => {
   }
 
   try {
-    const newTask = new Task(req.body);
-    console.log("newTask", newTask);
+    const user = user_id;
+    const newTask = new Task({
+      id: Date.now().toString(),
+      name,
+      description,
+      user,
+    });
     await newTask.save();
     res.status(201).send({
       success: true,

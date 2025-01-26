@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/auth";
+import toast from "react-hot-toast";
 import {
   AppBar,
   Toolbar,
@@ -13,10 +15,27 @@ import { FaUser, FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 const Header = () => {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [auth, setAuth] = useAuth();
 
   const handleAuthToggle = () => {
     navigate("/login");
     setIsLoggedIn(!isLoggedIn);
+  };
+
+  const handleLogout = () => {
+    setAuth({
+      ...auth,
+      user: null,
+      token: "",
+    });
+    setIsLoggedIn(!isLoggedIn);
+    localStorage.removeItem("auth");
+    toast.success("Logout Successfully");
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/");
   };
 
   return (
@@ -39,7 +58,8 @@ const Header = () => {
 
         {/* Navigation */}
         <Box display="flex" alignItems="center" gap={2}>
-          {!isLoggedIn && (
+          {console.log("auth?.user", auth?.user)}
+          {!auth?.user && (
             <>
               <Button
                 variant="contained"
@@ -49,18 +69,23 @@ const Header = () => {
               >
                 Login
               </Button>
-              <Button variant="outlined" color="inherit" startIcon={<FaUser />}>
+              <Button
+                variant="outlined"
+                color="inherit"
+                startIcon={<FaUser />}
+                onClick={handleRegister}
+              >
                 Register
               </Button>
             </>
           )}
 
-          {isLoggedIn && (
+          {auth?.user && (
             <Button
               variant="contained"
               color="error"
               startIcon={<FaSignOutAlt />}
-              onClick={handleAuthToggle}
+              onClick={handleLogout}
             >
               Logout
             </Button>

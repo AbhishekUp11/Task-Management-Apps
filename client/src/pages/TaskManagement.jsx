@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { FaTrash } from "react-icons/fa";
+import { useAuth } from "../context/auth.jsx";
 import {
   Container,
   TextField,
@@ -18,6 +19,7 @@ import Header from "../components/layout/Header";
 
 const TaskManagement = () => {
   const [tasks, setTasks] = useState([]);
+  const [auth, setAuth] = useAuth();
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
 
@@ -33,6 +35,7 @@ const TaskManagement = () => {
         id: Date.now(),
         name: taskName,
         description: taskDescription,
+        user_id: auth?.user?._id,
       };
 
       try {

@@ -9,6 +9,11 @@ const taskSchema = new mongoose.Schema({
     enum: ["Pending", "Completed", "Done"],
     default: "Pending",
   },
+  user: {
+    type: mongoose.ObjectId,
+    ref: "User",
+    required: true,
+  },
 });
 
 exports.Task = mongoose.model("Task", taskSchema);

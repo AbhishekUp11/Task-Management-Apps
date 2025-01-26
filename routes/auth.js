@@ -8,6 +8,7 @@ const taskController = require("../controllers/task");
 router
   .post("/register", authController.signUp)
   .post("/login", authController.login)
-  .post("/addTask", taskController.saveTask);
+  .post("/addTask", taskController.saveTask)
+  .post("/forgot-password", authController.resetPassword);
 
 exports.router = router;
