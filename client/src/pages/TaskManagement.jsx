@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaTrash } from "react-icons/fa";
 import { useAuth } from "../context/auth.jsx";
@@ -22,12 +22,44 @@ const TaskManagement = () => {
   const [auth, setAuth] = useAuth();
   const [taskName, setTaskName] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-
   const [columns, setColumns] = useState({
     Pending: [],
     Completed: [],
     Done: [],
   });
+
+  // Fetch tasks when the component mounts
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.REACT_APP_API}/api/v1/auth/getTasks`,
+          auth?.user?._id
+        );
+
+        if (response.data.success) {
+          const fetchedTasks = response.data.tasks;
+          const groupedTasks = {
+            Pending: [],
+            Completed: [],
+            Done: [],
+          };
+          // Group tasks by status
+          fetchedTasks.forEach((task) => {
+            groupedTasks[task.status].push(task);
+          });
+
+          setColumns(groupedTasks);
+        } else {
+          console.error("Failed to fetch tasks");
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+
+    fetchTasks();
+  }, [auth?.user?.token]);
 
   const handleAddTask = async () => {
     if (taskName && taskDescription) {
@@ -56,12 +88,29 @@ const TaskManagement = () => {
     }
   };
 
-  const handleDeleteTask = (column, taskId) => {
+  const handleDeleteTask = async (column, taskId) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
-      setColumns({
-        ...columns,
-        [column]: columns[column].filter((task) => task.id !== taskId),
-      });
+      try {
+        const response = await axios.delete(
+          `${process.env.REACT_APP_API}/api/v1/auth/deleteTask/${taskId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth?.user?.token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setColumns((prevColumns) => ({
+            ...prevColumns,
+            [column]: prevColumns[column].filter((task) => task._id !== taskId),
+          }));
+        } else {
+          console.error("Failed to delete task");
+        }
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
     }
   };
 
@@ -69,14 +118,37 @@ const TaskManagement = () => {
     e.dataTransfer.setData("task", JSON.stringify({ task, sourceColumn }));
   };
 
-  const handleDrop = (e, targetColumn) => {
+  const handleDrop = async (e, targetColumn) => {
     const { task, sourceColumn } = JSON.parse(e.dataTransfer.getData("task"));
+
     if (sourceColumn !== targetColumn) {
-      setColumns({
-        ...columns,
-        [sourceColumn]: columns[sourceColumn].filter((t) => t.id !== task.id),
-        [targetColumn]: [...columns[targetColumn], task],
-      });
+      try {
+        const updatedTask = { ...task, status: targetColumn };
+
+        const response = await axios.put(
+          `${process.env.REACT_APP_API}/api/v1/auth/updateTask/${task._id}`,
+          updatedTask,
+          {
+            headers: {
+              Authorization: `Bearer ${auth?.user?.token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setColumns((prevColumns) => ({
+            ...prevColumns,
+            [sourceColumn]: prevColumns[sourceColumn].filter(
+              (t) => t._id !== task._id
+            ),
+            [targetColumn]: [...prevColumns[targetColumn], updatedTask],
+          }));
+        } else {
+          console.error("Failed to update task status");
+        }
+      } catch (error) {
+        console.error("Error updating task status:", error);
+      }
     }
   };
 
@@ -149,7 +221,7 @@ const TaskManagement = () => {
                 <Box>
                   {columns[column].map((task) => (
                     <Card
-                      key={task.id}
+                      key={task._id}
                       sx={{
                         mb: 2,
                         display: "flex",
@@ -170,7 +242,7 @@ const TaskManagement = () => {
                         </Typography>
                       </CardContent>
                       <IconButton
-                        onClick={() => handleDeleteTask(column, task.id)}
+                        onClick={() => handleDeleteTask(column, task._id)}
                         color="error"
                       >
                         <Delete />

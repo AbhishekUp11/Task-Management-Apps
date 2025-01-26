@@ -29,3 +29,24 @@ exports.saveTask = async (req, res) => {
     res.status(500).send({ message: "Failed to save task." });
   }
 };
+
+exports.getTasks = async (req, res) => {
+  const { user } = req.body;
+
+  try {
+    const tasks = await Task.find({ user });
+    res.status(200).send({
+      success: true,
+      message: "Tasks fetched successfully.",
+      tasks,
+      total: tasks.length,
+    });
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    res.status(500).send({
+      success: false,
+      message: "Something went wrong while fetching tasks.",
+      error,
+    });
+  }
+};

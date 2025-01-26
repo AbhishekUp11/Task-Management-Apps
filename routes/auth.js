@@ -9,6 +9,7 @@ router
   .post("/register", authController.signUp)
   .post("/login", authController.login)
   .post("/addTask", taskController.saveTask)
-  .post("/forgot-password", authController.resetPassword);
+  .post("/forgot-password", authController.resetPassword)
+  .get("/getTasks", taskController.getTasks);
 
 exports.router = router;
